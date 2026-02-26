@@ -368,11 +368,29 @@ KIBNET, 토스페이먼츠, 자동인출 신청 은행
         .then(r => r.json())
         .then(res => {
             if(res.result === "success") {
-                alert("제출이 완료되었습니다!");
-                location.href = "view.html?bill=" + allData.billNumber; // 완료 페이지 이동
+                // 화면 전체를 성공 메시지로 교체
+                document.body.innerHTML = `
+                    <div class="container mt-5">
+                        <div class="form-card text-center">
+                            <div class="header">
+                                <h2>제출 완료</h2>
+                            </div>
+                            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                                신청서 작성이 완료되었습니다.
+                            </p>
+                            <h4 style="color: #ec008b; font-weight: 800; line-height: 1.5;">
+                                해지 신청은 채널톡으로 구비서류 제출까지<br>
+                                완료되어야 최종 접수됩니다.
+                            </h4>
+                            <button class="btn-magenta mt-4" onclick="location.reload()">처음으로 돌아가기</button>
+                        </div>
+                    </div>
+                `;
+                window.scrollTo(0,0);
             } else {
                 alert("오류: " + res.message);
                 btn.disabled = false;
+                btn.innerText = "제출 완료";
             }
         }).catch(e => {
             alert("전송 중 오류 발생");
