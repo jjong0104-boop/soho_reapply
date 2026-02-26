@@ -20,18 +20,8 @@
         .form-control { padding: 13px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; }
         .bg-readonly { background-color: #f1f3f5 !important; color: #495057; font-weight: bold; }
         .btn-submit { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 25px; }
-        
-        .notice-box { 
-            background-color: #fff0f7; 
-            border-left: 4px solid var(--u-magenta); 
-            padding: 12px; 
-            margin-bottom: 20px; 
-            font-size: 0.85rem; 
-            line-height: 1.6;
-            color: #333;
-        }
+        .notice-box { background-color: #fff0f7; border-left: 4px solid var(--u-magenta); padding: 12px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.6; color: #333; }
         .notice-box b { color: var(--u-magenta); }
-
         .signature-wrapper { background: #fff; border: 2px solid #eee; border-radius: 10px; width: 100%; height: 200px; touch-action: none; position: relative; }
         canvas { width: 100%; height: 100%; }
         #sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ccc; pointer-events: none; font-weight: bold; }
@@ -85,10 +75,14 @@
         </div>
 
         <div class="section-title">사은품 지급 계좌 정보</div>
-        
         <div class="notice-box">
             <b>• 재약정 진행 시 사은금은 익월 20일 이후에 지급됩니다.</b><br>
             <b>• 본인명의 계좌만 지급 가능합니다.</b>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">대상회선 확인</label>
+            <input type="text" id="targetLine" class="form-control bg-readonly" readonly placeholder="회선 정보 없음">
         </div>
 
         <div class="mb-3">
@@ -139,16 +133,19 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
-        const name = params.get('name');
+        
+        // 데이터 로드 로직
         const bill = params.get('bill');
+        const name = params.get('name');
         const tel = params.get('tel');
         const gift = params.get('gift');
-        
+        const line = params.get('line'); // 대상회선 파라미터 추가
+
         if (bill) document.getElementById('billNumber').value = bill;
         if (name) document.getElementById('custName').value = decodeURIComponent(name);
         if (tel) document.getElementById('custTel').value = tel;
+        if (line) document.getElementById('targetLine').value = decodeURIComponent(line);
         if (gift) {
-            // 숫자인 경우 콤마 형식 적용, 문자인 경우 그대로 표시
             const formattedGift = isNaN(gift) ? gift : Number(gift).toLocaleString() + "원";
             document.getElementById('giftAmount').value = formattedGift;
         }
@@ -214,6 +211,7 @@
             bizNum: document.getElementById('bizNum').value,
             bizReg: document.getElementById('bizReg').value,
             custAddr: document.getElementById('custAddr').value + " " + document.getElementById('custDetail').value,
+            targetLine: document.getElementById('targetLine').value, // 대상회선 전송 데이터 추가
             giftAmount: document.getElementById('giftAmount').value,
             bankAccount: `${bName} / ${bNo} / ${bOwner}`,
             signature: signaturePad.toDataURL()
