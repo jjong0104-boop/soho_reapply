@@ -14,17 +14,32 @@
         .form-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid var(--u-magenta); padding-bottom: 20px; }
         .header h2 { color: var(--u-magenta); font-weight: 800; font-size: 1.6rem; }
+        .step-indicator { text-align: center; color: #999; font-size: 0.9rem; margin-bottom: 20px; }
         .section-title { font-size: 1.1rem; font-weight: 700; color: #333; margin: 25px 0 15px; display: flex; align-items: center; }
         .section-title::before { content: ""; width: 5px; height: 18px; background: var(--u-magenta); margin-right: 10px; border-radius: 2px; }
         .form-label { font-weight: 600; font-size: 0.9rem; color: #555; }
         .form-control { padding: 13px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; }
         .bg-readonly { background-color: #f1f3f5 !important; color: #495057; font-weight: bold; }
-        .btn-submit { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 25px; }
+        
+        /* 약관 동의 박스 스타일 */
+        .agreement-title { font-weight: 700; color: var(--u-magenta); margin-bottom: 8px; font-size: 0.95rem; }
+        .agreement-box { 
+            background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; 
+            font-size: 0.82rem; color: #666; max-height: 150px; overflow-y: auto; line-height: 1.6; margin-bottom: 20px;
+        }
         .notice-box { background-color: #fff0f7; border-left: 4px solid var(--u-magenta); padding: 12px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.6; color: #333; }
         .notice-box b { color: var(--u-magenta); }
+
+        .btn-magenta { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; }
+        .btn-magenta:disabled { background: #ccc; }
+        
         .signature-wrapper { background: #fff; border: 2px solid #eee; border-radius: 10px; width: 100%; height: 200px; touch-action: none; position: relative; }
         canvas { width: 100%; height: 100%; }
         #sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ccc; pointer-events: none; font-weight: bold; }
+        
+        /* 페이지 전환용 */
+        .step-page { display: none; }
+        .step-active { display: block; }
     </style>
 </head>
 <body>
@@ -33,97 +48,126 @@
     <div class="form-card">
         <div class="header">
             <h2>U+우리가게패키지 재약정신청서</h2>
-            <p class="text-muted small">정보를 확인하신 후 서명을 완료해 주세요.</p>
         </div>
 
-        <div class="section-title">가입자 기본 정보</div>
-        <div class="row g-2 mb-3">
-            <div class="col-6">
-                <label class="form-label">청구서번호</label>
-                <input type="text" id="billNumber" class="form-control bg-readonly" readonly>
+        <div id="step1" class="step-page step-active">
+            <div class="step-indicator">(1/2) 정보 확인 및 입력</div>
+            
+            <div class="section-title">가입자 기본 정보</div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label">청구서번호</label>
+                    <input type="text" id="billNumber" class="form-control bg-readonly" readonly>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">신청일</label>
+                    <input type="text" id="applyDate" class="form-control bg-readonly" readonly>
+                </div>
             </div>
-            <div class="col-6">
-                <label class="form-label">신청일</label>
-                <input type="text" id="applyDate" class="form-control bg-readonly" readonly>
+            <div class="mb-3">
+                <label class="form-label">고객명</label>
+                <input type="text" id="custName" class="form-control bg-readonly" readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">연락처*</label>
+                <input type="tel" id="custTel" class="form-control" placeholder="010-0000-0000">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">사업자등록번호*</label>
+                <input type="tel" id="bizNum" class="form-control" placeholder="000-00-00000" inputmode="numeric">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">생년월일*</label>
+                <input type="tel" id="bizReg" class="form-control" placeholder="6자리 (예: 880101)" inputmode="numeric">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">설치 주소*</label>
+                <input type="text" id="custAddr" class="form-control mb-2" readonly onclick="execDaumPostcode()" placeholder="주소 검색">
+                <input type="text" id="custDetail" class="form-control" placeholder="상세주소 입력">
+            </div>
+
+            <div class="section-title">사은품 지급 계좌 정보</div>
+            <div class="notice-box">
+                <b>• 재약정 진행 시 사은금은 익월 20일 이후에 지급됩니다.</b><br>
+                <b>• 본인명의 계좌만 지급 가능합니다.</b>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">확인된 사은금액 / 대상회선</label>
+                <div class="row g-2">
+                    <div class="col-6"><input type="text" id="giftAmount" class="form-control bg-readonly" readonly></div>
+                    <div class="col-6"><input type="text" id="targetLine" class="form-control bg-readonly" readonly></div>
+                </div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-4"><label class="form-label">은행명*</label><input type="text" id="bankName" class="form-control" placeholder="은행명"></div>
+                <div class="col-8"><label class="form-label">계좌번호*</label><input type="tel" id="bankNo" class="form-control" placeholder="하이픈(-) 없이" inputmode="numeric"></div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">예금주명*</label>
+                <input type="text" id="bankOwner" class="form-control" placeholder="예금주 성함">
+            </div>
+
+            <button type="button" class="btn-magenta" onclick="nextStep()">다음 단계로 (2/2)</button>
+        </div>
+
+        <div id="step2" class="step-page">
+            <div class="step-indicator">(2/2) 개인정보 활용 동의 및 서명</div>
+
+            <div class="section-title">개인정보 활용 동의</div>
+
+            <div class="mb-4">
+                <div class="agreement-title">2. (필수) 개인정보 수집·이용 동의</div>
+                <div class="agreement-box">
+                    (1) 이용목적: 이용요금 연체정보 통지, 신용보험 가입, 신용도 판단, 요금정산, 신청 서비스 안내, 맞춤형 서비스 제공, 명의도용 방지 등<br>
+                    (2) 수집항목: 이름, 연락처, 이메일, 주소, 주민등록주소, 계좌번호, 카드번호, 카드유효기간 등<br>
+                    (3) 이용기간: 서비스 가입기간 동안 이용 및 요금정산 과·오납 등 분쟁대비를 위해 해지 후 요금완납 6개월까지 보유·이용
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="agreement-title">3. (필수) 개인위치정보 수집·이용 동의</div>
+                <div class="agreement-box">
+                    (1) 이용목적: 위치기반 서비스 및 위치정보 서비스 안내·제공·요금정산<br>
+                    (2) 수집항목: 개인위치정보(기지국, GPS, Wifi, RFID 태그 등)<br>
+                    (3) 이용기간: 서비스 가입기간 동안 이용 및 분쟁대비를 위해 해지 후 요금완납 3개월까지
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="agreement-title">4. (필수) 개인정보 제3자 제공 및 조회 동의</div>
+                <div class="agreement-box">
+                    (1) 제공받는 자: 금융결제원, 각 은행, 카드사, NICE평가정보, 한국정보통신진흥협회 등<br>
+                    (2) 이용목적: 요금수납, 본인인증, 신용도조회 등<br>
+                    (3) 보유기간: 서비스 가입기간 및 법정 의무 보유기간
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="agreement-title">5. (필수) 문서상 동의 체크 항목</div>
+                <div class="agreement-box">
+                    (1) 필수 개인신용정보 조회 동의: 본인은 하기 내용에 충분히 이해하고 동의합니다.<br>
+                    (2) 필수 개인정보 취급위탁 동의: 본인은 하기 내용에 충분히 이해하고 동의합니다.
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="allAgreeCheck">
+                    <label class="form-check-label fw-bold text-dark" for="allAgreeCheck">모든 필수 항목에 동의합니다.</label>
+                </div>
+            </div>
+
+            <div class="section-title">신청인 확인 서명</div>
+            <div class="signature-wrapper">
+                <div id="sig-placeholder">여기에 서명해 주세요</div>
+                <canvas id="signature-pad"></canvas>
+            </div>
+            <div class="text-end mt-2 mb-4">
+                <button type="button" class="btn btn-sm btn-light" onclick="clearSignature()">다시 쓰기</button>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-4"><button type="button" class="btn btn-secondary w-100 py-3 rounded-3" onclick="prevStep()">이전</button></div>
+                <div class="col-8"><button type="button" class="btn-magenta" id="submitBtn" onclick="submitData()">제출 완료</button></div>
             </div>
         </div>
-        
-        <div class="mb-3">
-            <label class="form-label">고객명</label>
-            <input type="text" id="custName" class="form-control bg-readonly" readonly>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">연락처*</label>
-            <input type="tel" id="custTel" class="form-control" placeholder="010-0000-0000">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">사업자등록번호*</label>
-            <input type="tel" id="bizNum" class="form-control" placeholder="000-00-00000" inputmode="numeric">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">생년월일*</label>
-            <input type="tel" id="bizReg" class="form-control" placeholder="6자리 (예: 880101)" inputmode="numeric">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">설치 주소*</label>
-            <input type="text" id="custAddr" class="form-control mb-2" readonly onclick="execDaumPostcode()" placeholder="주소 검색">
-            <input type="text" id="custDetail" class="form-control" placeholder="상세주소 입력">
-        </div>
-
-        <div class="section-title">사은품 지급 계좌 정보</div>
-        <div class="notice-box">
-            <b>• 재약정 진행 시 사은금은 익월 20일 이후에 지급됩니다.</b><br>
-            <b>• 본인명의 계좌만 지급 가능합니다.</b>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">대상회선 확인</label>
-            <input type="text" id="targetLine" class="form-control bg-readonly" readonly placeholder="회선 정보 없음">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">확인된 사은금액</label>
-            <input type="text" id="giftAmount" class="form-control bg-readonly" readonly placeholder="금액 정보 없음">
-        </div>
-
-        <div class="row g-2 mb-3">
-            <div class="col-4">
-                <label class="form-label">은행명*</label>
-                <input type="text" id="bankName" class="form-control" placeholder="은행명">
-            </div>
-            <div class="col-8">
-                <label class="form-label">계좌번호*</label>
-                <input type="tel" id="bankNo" class="form-control" placeholder="하이픈(-) 없이 입력" inputmode="numeric">
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">예금주명*</label>
-            <input type="text" id="bankOwner" class="form-control" placeholder="예금주 성함">
-        </div>
-
-        <div class="section-title">개인정보 수집 및 동의</div>
-        <div class="mb-2 p-2 bg-light rounded small text-muted" style="height: 80px; overflow-y: scroll;">
-            본인은 U+ 재약정 서비스 제공 및 사은품 지급을 위해 본인의 개인정보(이름, 연락처, 주소, 계좌정보, 사업자번호 등)를 수집 및 이용하는 것에 동의합니다.
-        </div>
-        <div class="form-check mb-4">
-            <input class="form-check-input" type="checkbox" id="agreeCheck">
-            <label class="form-check-label fw-bold" for="agreeCheck">개인정보 활용에 동의합니다.*</label>
-        </div>
-
-        <div class="section-title">신청인 서명</div>
-        <div class="signature-wrapper">
-            <div id="sig-placeholder">여기에 서명해 주세요</div>
-            <canvas id="signature-pad"></canvas>
-        </div>
-        <div class="text-end mt-2">
-            <button type="button" class="btn btn-sm btn-light" onclick="clearSignature()">다시 쓰기</button>
-        </div>
-
-        <button type="button" class="btn-submit" id="submitBtn" onclick="submitData()">신청서 제출 완료</button>
     </div>
 </div>
 
@@ -132,41 +176,46 @@
     const gasUrl = "https://script.google.com/macros/s/AKfycbxpD1URQc9TUlMC2xH8IkPJa80Uw3XInSuKinbIR_JoPFbxJtsW58UYeIooKsNOojkX/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
+        // 데이터 파싱 및 초기화
         const params = new URLSearchParams(window.location.search);
-        
-        // 데이터 로드 로직
-        const bill = params.get('bill');
-        const name = params.get('name');
-        const tel = params.get('tel');
+        document.getElementById('billNumber').value = params.get('bill') || "";
+        document.getElementById('custName').value = decodeURIComponent(params.get('name') || "");
+        document.getElementById('custTel').value = params.get('tel') || "";
+        document.getElementById('targetLine').value = decodeURIComponent(params.get('line') || "");
         const gift = params.get('gift');
-        const line = params.get('line'); // 대상회선 파라미터 추가
-
-        if (bill) document.getElementById('billNumber').value = bill;
-        if (name) document.getElementById('custName').value = decodeURIComponent(name);
-        if (tel) document.getElementById('custTel').value = tel;
-        if (line) document.getElementById('targetLine').value = decodeURIComponent(line);
-        if (gift) {
-            const formattedGift = isNaN(gift) ? gift : Number(gift).toLocaleString() + "원";
-            document.getElementById('giftAmount').value = formattedGift;
-        }
-
+        document.getElementById('giftAmount').value = gift ? Number(gift).toLocaleString() + "원" : "";
+        
         const now = new Date();
         document.getElementById('applyDate').value = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
+        // 서명 패드 초기화
         const canvas = document.getElementById('signature-pad');
-        const placeholder = document.getElementById('sig-placeholder');
-        signaturePad = new SignaturePad(canvas, {
-            minWidth: 3,
-            maxWidth: 7,
-            penColor: "rgb(0, 0, 0)"
-        });
-
-        const hidePlaceholder = () => { placeholder.style.display = 'none'; };
+        signaturePad = new SignaturePad(canvas, { minWidth: 3, maxWidth: 7, penColor: "black" });
+        
+        const hidePlaceholder = () => { document.getElementById('sig-placeholder').style.display = 'none'; };
         canvas.addEventListener('mousedown', hidePlaceholder);
         canvas.addEventListener('touchstart', hidePlaceholder);
-
+        
+        window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
     });
+
+    function nextStep() {
+        const required = ['custTel', 'bizNum', 'bizReg', 'custAddr', 'bankName', 'bankNo', 'bankOwner'];
+        for(let id of required) {
+            if(!document.getElementById(id).value) { alert("모든 필수 항목(*)을 입력해 주세요."); return; }
+        }
+        document.getElementById('step1').classList.remove('step-active');
+        document.getElementById('step2').classList.add('step-active');
+        resizeCanvas();
+        window.scrollTo(0,0);
+    }
+
+    function prevStep() {
+        document.getElementById('step2').classList.remove('step-active');
+        document.getElementById('step1').classList.add('step-active');
+        window.scrollTo(0,0);
+    }
 
     function execDaumPostcode() {
         new daum.Postcode({
@@ -191,14 +240,8 @@
     }
 
     function submitData() {
-        if(!document.getElementById('agreeCheck').checked) { alert("개인정보 동의에 체크해 주세요."); return; }
+        if(!document.getElementById('allAgreeCheck').checked) { alert("모든 필수 항목 동의에 체크해 주세요."); return; }
         if(signaturePad.isEmpty()) { alert("서명을 완료해 주세요."); return; }
-        
-        const bName = document.getElementById('bankName').value;
-        const bNo = document.getElementById('bankNo').value;
-        const bOwner = document.getElementById('bankOwner').value;
-        
-        if(!bName || !bNo || !bOwner) { alert("계좌 정보를 모두 입력해 주세요."); return; }
 
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
@@ -211,9 +254,9 @@
             bizNum: document.getElementById('bizNum').value,
             bizReg: document.getElementById('bizReg').value,
             custAddr: document.getElementById('custAddr').value + " " + document.getElementById('custDetail').value,
-            targetLine: document.getElementById('targetLine').value, // 대상회선 전송 데이터 추가
+            targetLine: document.getElementById('targetLine').value,
             giftAmount: document.getElementById('giftAmount').value,
-            bankAccount: `${bName} / ${bNo} / ${bOwner}`,
+            bankAccount: `${document.getElementById('bankName').value} / ${document.getElementById('bankNo').value} / ${document.getElementById('bankOwner').value}`,
             signature: signaturePad.toDataURL()
         };
 
@@ -222,16 +265,14 @@
         .then(res => {
             if(res.result === "success") {
                 alert("제출이 완료되었습니다!");
-                location.href = "view.html?bill=" + allData.billNumber;
+                location.href = "view.html?bill=" + allData.billNumber; // 완료 페이지 이동
             } else {
                 alert("오류: " + res.message);
                 btn.disabled = false;
-                btn.innerText = "신청서 제출 완료";
             }
         }).catch(e => {
             alert("전송 중 오류 발생");
             btn.disabled = false;
-            btn.innerText = "신청서 제출 완료";
         });
     }
 </script>
