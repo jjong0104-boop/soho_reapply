@@ -72,10 +72,20 @@
             <input type="text" id="custDetail" class="form-control" placeholder="상세주소 입력">
         </div>
 
-        <div class="section-title">사은품 지급 정보</div>
+        <div class="section-title">사은품 지급 계좌 정보</div>
+        <div class="row g-2 mb-3">
+            <div class="col-4">
+                <label class="form-label">은행명*</label>
+                <input type="text" id="bankName" class="form-control" placeholder="은행명">
+            </div>
+            <div class="col-8">
+                <label class="form-label">계좌번호*</label>
+                <input type="tel" id="bankNo" class="form-control" placeholder="하이픈(-) 없이 입력" inputmode="numeric">
+            </div>
+        </div>
         <div class="mb-3">
-            <label class="form-label">지급 계좌번호*</label>
-            <input type="text" id="bankAccount" class="form-control" placeholder="은행명 / 계좌번호 / 예금주명">
+            <label class="form-label">예금주명*</label>
+            <input type="text" id="bankOwner" class="form-control" placeholder="예금주 성함">
         </div>
 
         <div class="section-title">개인정보 수집 및 동의</div>
@@ -102,7 +112,7 @@
 
 <script>
     let signaturePad;
-    const gasUrl = "https://script.google.com/macros/s/AKfycbxpD1URQc9TUlMC2xH8IkPJa80Uw3XInSuKinbIR_JoPFbxJtsW58UYeIooKsNOojkX/exec"; // 사장님 GAS URL
+    const gasUrl = "https://script.google.com/macros/s/AKfycbxpD1URQc9TUlMC2xH8IkPJa80Uw3XInSuKinbIR_JoPFbxJtsW58UYeIooKsNOojkX/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
@@ -110,16 +120,13 @@
         const bill = params.get('bill');
         const tel = params.get('tel');
         
-        // 데이터 세팅
         if (bill) document.getElementById('billNumber').value = bill;
         if (name) document.getElementById('custName').value = decodeURIComponent(name);
         if (tel) document.getElementById('custTel').value = tel;
 
-        // 오늘 날짜 세팅
         const now = new Date();
         document.getElementById('applyDate').value = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
-        // 서명 패드 초기화
         const canvas = document.getElementById('signature-pad');
         const placeholder = document.getElementById('sig-placeholder');
         signaturePad = new SignaturePad(canvas);
@@ -156,6 +163,12 @@
     function submitData() {
         if(!document.getElementById('agreeCheck').checked) { alert("개인정보 동의에 체크해 주세요."); return; }
         if(signaturePad.isEmpty()) { alert("서명을 완료해 주세요."); return; }
+        
+        const bName = document.getElementById('bankName').value;
+        const bNo = document.getElementById('bankNo').value;
+        const bOwner = document.getElementById('bankOwner').value;
+        
+        if(!bName || !bNo || !bOwner) { alert("계좌 정보를 모두 입력해 주세요."); return; }
 
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
@@ -168,7 +181,7 @@
             bizNum: document.getElementById('bizNum').value,
             bizReg: document.getElementById('bizReg').value,
             custAddr: document.getElementById('custAddr').value + " " + document.getElementById('custDetail').value,
-            bankAccount: document.getElementById('bankAccount').value,
+            bankAccount: `${bName} / ${bNo} / ${bOwner}`,
             signature: signaturePad.toDataURL()
         };
 
@@ -177,7 +190,7 @@
         .then(res => {
             if(res.result === "success") {
                 alert("제출이 완료되었습니다!");
-                location.href = "https://jjong0104-boop.github.io/soho_reapply/view.html?bill=" + allData.billNumber;
+                location.href = "view.html?bill=" + allData.billNumber;
             } else {
                 alert("오류: " + res.message);
                 btn.disabled = false;
