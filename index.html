@@ -20,7 +20,6 @@
         .form-control { padding: 13px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; }
         .bg-readonly { background-color: #f1f3f5 !important; color: #495057; font-weight: bold; }
         .btn-submit { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 25px; }
-        /* 서명 패드 스타일 */
         .signature-wrapper { background: #fff; border: 2px solid #eee; border-radius: 10px; width: 100%; height: 200px; touch-action: none; position: relative; }
         canvas { width: 100%; height: 100%; }
         #sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ccc; pointer-events: none; font-weight: bold; }
@@ -50,6 +49,11 @@
         <div class="mb-3">
             <label class="form-label">고객명</label>
             <input type="text" id="custName" class="form-control bg-readonly" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">사은금액 확인</label>
+            <input type="text" id="giftAmount" class="form-control bg-readonly" readonly>
         </div>
 
         <div class="mb-3">
@@ -113,7 +117,7 @@
 
 <script>
     let signaturePad;
-    // 사장님의 재약정용 GAS 웹앱 배포 URL
+    // 사장님의 GAS 웹앱 URL
     const gasUrl = "https://script.google.com/macros/s/AKfycbxpD1URQc9TUlMC2xH8IkPJa80Uw3XInSuKinbIR_JoPFbxJtsW58UYeIooKsNOojkX/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -121,18 +125,22 @@
         const name = params.get('name');
         const bill = params.get('bill');
         const tel = params.get('tel');
+        const gift = params.get('gift'); // 사은금액 파라미터 가져오기
         
         if (bill) document.getElementById('billNumber').value = bill;
         if (name) document.getElementById('custName').value = decodeURIComponent(name);
         if (tel) document.getElementById('custTel').value = tel;
+        // 사은금액 세팅 (숫자인 경우 콤마 추가)
+        if (gift) {
+            const formattedGift = Number(gift).toLocaleString();
+            document.getElementById('giftAmount').value = formattedGift + "원";
+        }
 
         const now = new Date();
         document.getElementById('applyDate').value = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
         const canvas = document.getElementById('signature-pad');
         const placeholder = document.getElementById('sig-placeholder');
-        
-        // 서명 패드 초기화 (굵기 보정: 3~7)
         signaturePad = new SignaturePad(canvas, {
             minWidth: 3,
             maxWidth: 7,
@@ -189,7 +197,8 @@
             bizNum: document.getElementById('bizNum').value,
             bizReg: document.getElementById('bizReg').value,
             custAddr: document.getElementById('custAddr').value + " " + document.getElementById('custDetail').value,
-            bankAccount: `${bName} / ${bNo} / ${bOwner}`, // 기존 PDF 로직 호환을 위해 합쳐서 전송
+            giftAmount: document.getElementById('giftAmount').value, // 사은금액 데이터 포함
+            bankAccount: `${bName} / ${bNo} / ${bOwner}`,
             signature: signaturePad.toDataURL()
         };
 
@@ -198,17 +207,14 @@
         .then(res => {
             if(res.result === "success") {
                 alert("제출이 완료되었습니다!");
-                // 결과 조회 페이지로 이동
                 location.href = "view.html?bill=" + allData.billNumber;
             } else {
                 alert("오류: " + res.message);
                 btn.disabled = false;
-                btn.innerText = "신청서 제출 완료";
             }
         }).catch(e => {
             alert("전송 중 오류 발생");
             btn.disabled = false;
-            btn.innerText = "신청서 제출 완료";
         });
     }
 </script>
