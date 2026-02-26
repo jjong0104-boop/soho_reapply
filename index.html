@@ -8,33 +8,21 @@
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <style>
-        :root { --u-magenta: #ec008b; --bg-gray: #f4f4f4; }
-        body { background-color: var(--bg-gray); padding-bottom: 50px; font-family: 'Pretendard', -apple-system, sans-serif; }
+        :root { --u-magenta: #ec008b; --bg-gray: #f8f9fa; }
+        body { background-color: var(--bg-gray); padding-bottom: 50px; font-family: 'Pretendard', sans-serif; }
         .container { max-width: 600px; margin: auto; padding: 15px; }
         .form-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        
-        /* 헤더 스타일 */
-        .header { text-align: center; margin-bottom: 35px; border-bottom: 3px solid var(--u-magenta); padding-bottom: 20px; }
-        .header h2 { color: var(--u-magenta); font-weight: 800; font-size: 1.7rem; letter-spacing: -1px; }
-        
-        /* 섹션 타이틀 */
-        .section-title { font-size: 1.15rem; font-weight: 700; color: #333; margin: 30px 0 15px; display: flex; align-items: center; }
-        .section-title::before { content: ""; width: 5px; height: 20px; background: var(--u-magenta); margin-right: 12px; border-radius: 3px; }
-        
-        /* 입력창 스타일 */
-        .form-label { font-weight: 600; font-size: 0.95rem; color: #444; margin-bottom: 8px; }
-        .form-control { padding: 14px; border-radius: 10px; border: 1px solid #e0e0e0; font-size: 16px; transition: all 0.2s; }
-        .form-control:focus { border-color: var(--u-magenta); box-shadow: 0 0 0 0.2rem rgba(236, 0, 139, 0.1); }
-        .bg-readonly { background-color: #f9f9f9 !important; font-weight: bold; color: #222; }
-        
-        /* 버튼 스타일 */
-        .btn-submit { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: 800; font-size: 1.2rem; margin-top: 30px; box-shadow: 0 4px 15px rgba(236, 0, 139, 0.3); }
-        .btn-submit:disabled { background: #ccc; box-shadow: none; }
-        
-        /* 서명 패드 */
-        .signature-wrapper { background: #fff; border: 2px solid #eee; border-radius: 12px; width: 100%; height: 220px; touch-action: none; position: relative; overflow: hidden; }
-        canvas { width: 100%; height: 100%; cursor: crosshair; }
-        #sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #d0d0d0; pointer-events: none; font-size: 1.2rem; font-weight: 700; z-index: 5; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid var(--u-magenta); padding-bottom: 20px; }
+        .header h2 { color: var(--u-magenta); font-weight: 800; font-size: 1.6rem; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: #333; margin: 25px 0 15px; display: flex; align-items: center; }
+        .section-title::before { content: ""; width: 5px; height: 18px; background: var(--u-magenta); margin-right: 10px; border-radius: 2px; }
+        .form-label { font-weight: 600; font-size: 0.9rem; color: #555; }
+        .form-control { padding: 13px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; }
+        .bg-readonly { background-color: #f1f3f5 !important; color: #495057; font-weight: bold; }
+        .btn-submit { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 25px; }
+        .signature-wrapper { background: #fff; border: 2px solid #eee; border-radius: 10px; width: 100%; height: 200px; touch-action: none; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        #sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ccc; pointer-events: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -43,81 +31,103 @@
     <div class="form-card">
         <div class="header">
             <h2>U+우리가게패키지 재약정신청서</h2>
-            <p class="text-muted small mb-0">안전하고 신속한 재약정 처리를 위해 내용을 입력해주세요.</p>
+            <p class="text-muted small">정보를 확인하신 후 서명을 완료해 주세요.</p>
         </div>
 
-        <div class="section-title">가입자 정보 확인</div>
+        <div class="section-title">가입자 기본 정보</div>
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <label class="form-label">청구서번호</label>
+                <input type="text" id="billNumber" class="form-control bg-readonly" readonly>
+            </div>
+            <div class="col-6">
+                <label class="form-label">신청일</label>
+                <input type="text" id="applyDate" class="form-control bg-readonly" readonly>
+            </div>
+        </div>
+        
         <div class="mb-3">
             <label class="form-label">고객명</label>
             <input type="text" id="custName" class="form-control bg-readonly" readonly>
         </div>
+
+        <div class="mb-3">
+            <label class="form-label">연락처*</label>
+            <input type="tel" id="custTel" class="form-control" placeholder="010-0000-0000">
+        </div>
+
         <div class="mb-3">
             <label class="form-label">사업자등록번호*</label>
             <input type="tel" id="bizNum" class="form-control" placeholder="000-00-00000" inputmode="numeric">
         </div>
+
         <div class="mb-3">
             <label class="form-label">생년월일*</label>
-            <input type="tel" id="bizReg" class="form-control" placeholder="생년월일 6자리 (예: 880101)" inputmode="numeric">
+            <input type="tel" id="bizReg" class="form-control" placeholder="6자리 (예: 880101)" inputmode="numeric">
         </div>
+
         <div class="mb-3">
             <label class="form-label">설치 주소*</label>
-            <input type="text" id="custAddr" class="form-control mb-2 bg-white" readonly onclick="execDaumPostcode()" placeholder="주소 검색 (여기를 터치)">
-            <input type="text" id="custDetail" class="form-control" placeholder="나머지 상세 주소를 입력해 주세요">
+            <input type="text" id="custAddr" class="form-control mb-2" readonly onclick="execDaumPostcode()" placeholder="주소 검색">
+            <input type="text" id="custDetail" class="form-control" placeholder="상세주소 입력">
         </div>
 
         <div class="section-title">사은품 지급 정보</div>
-        <div class="mb-3">
-            <label class="form-label">사은금액</label>
-            <input type="text" id="giftAmount" class="form-control bg-readonly" readonly>
-        </div>
         <div class="mb-3">
             <label class="form-label">지급 계좌번호*</label>
             <input type="text" id="bankAccount" class="form-control" placeholder="은행명 / 계좌번호 / 예금주명">
         </div>
 
-        <div class="section-title">신청인 확인 서명</div>
+        <div class="section-title">개인정보 수집 및 동의</div>
+        <div class="mb-2 p-2 bg-light rounded small text-muted" style="height: 80px; overflow-y: scroll;">
+            본인은 U+ 재약정 서비스 제공 및 사은품 지급을 위해 본인의 개인정보(이름, 연락처, 주소, 계좌정보, 사업자번호 등)를 수집 및 이용하는 것에 동의합니다.
+        </div>
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="agreeCheck">
+            <label class="form-check-label fw-bold" for="agreeCheck">개인정보 활용에 동의합니다.*</label>
+        </div>
+
+        <div class="section-title">신청인 서명</div>
         <div class="signature-wrapper">
-            <div id="sig-placeholder">여기에 정자로 서명해 주세요</div>
+            <div id="sig-placeholder">여기에 서명해 주세요</div>
             <canvas id="signature-pad"></canvas>
         </div>
         <div class="text-end mt-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary border-0" onclick="clearSignature()">서명 다시하기</button>
+            <button type="button" class="btn btn-sm btn-light" onclick="clearSignature()">다시 쓰기</button>
         </div>
 
-        <button type="button" class="btn-submit" id="submitBtn" onclick="submitData()">재약정 신청 완료하기</button>
+        <button type="button" class="btn-submit" id="submitBtn" onclick="submitData()">신청서 제출 완료</button>
     </div>
 </div>
 
 <script>
     let signaturePad;
-    // 사장님의 재약정용 GAS 웹앱 배포 URL을 여기에 넣어주세요
-    const gasUrl = "여기에_새로운_재약정_GAS_URL을_입력하세요"; 
+    const gasUrl = "https://script.google.com/macros/s/AKfycbxpD1URQc9TUlMC2xH8IkPJa80Uw3XInSuKinbIR_JoPFbxJtsW58UYeIooKsNOojkX/exec"; // 사장님 GAS URL
 
     window.addEventListener('DOMContentLoaded', () => {
-        // URL 파라미터에서 데이터 가져오기
         const params = new URLSearchParams(window.location.search);
         const name = params.get('name');
         const bill = params.get('bill');
-        const gift = params.get('gift'); // 사은금액 파라미터 추가
+        const tel = params.get('tel');
         
+        // 데이터 세팅
+        if (bill) document.getElementById('billNumber').value = bill;
         if (name) document.getElementById('custName').value = decodeURIComponent(name);
-        if (gift) document.getElementById('giftAmount').value = decodeURIComponent(gift) + " 원";
-        window.billNumber = bill;
+        if (tel) document.getElementById('custTel').value = tel;
+
+        // 오늘 날짜 세팅
+        const now = new Date();
+        document.getElementById('applyDate').value = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
         // 서명 패드 초기화
         const canvas = document.getElementById('signature-pad');
         const placeholder = document.getElementById('sig-placeholder');
-        signaturePad = new SignaturePad(canvas, {
-            penColor: 'rgb(0, 0, 0)',
-            minWidth: 2,
-            maxWidth: 4
-        });
+        signaturePad = new SignaturePad(canvas);
 
         const hidePlaceholder = () => { placeholder.style.display = 'none'; };
         canvas.addEventListener('mousedown', hidePlaceholder);
         canvas.addEventListener('touchstart', hidePlaceholder);
 
-        // 캔버스 크기 최적화
         resizeCanvas();
     });
 
@@ -144,42 +154,37 @@
     }
 
     function submitData() {
+        if(!document.getElementById('agreeCheck').checked) { alert("개인정보 동의에 체크해 주세요."); return; }
+        if(signaturePad.isEmpty()) { alert("서명을 완료해 주세요."); return; }
+
         const btn = document.getElementById('submitBtn');
-        const data = {
-            billNumber: window.billNumber,
+        btn.disabled = true;
+        btn.innerText = "제출 중...";
+
+        const allData = {
+            billNumber: document.getElementById('billNumber').value,
             custName: document.getElementById('custName').value,
+            custTel: document.getElementById('custTel').value,
             bizNum: document.getElementById('bizNum').value,
             bizReg: document.getElementById('bizReg').value,
             custAddr: document.getElementById('custAddr').value + " " + document.getElementById('custDetail').value,
             bankAccount: document.getElementById('bankAccount').value,
-            giftAmount: document.getElementById('giftAmount').value,
             signature: signaturePad.toDataURL()
         };
 
-        // 필수값 체크
-        if(!data.bizNum || !data.bizReg || !document.getElementById('custAddr').value || !data.bankAccount || signaturePad.isEmpty()) {
-            alert("입력되지 않은 필수 항목(*)이 있습니다.\n모든 정보를 입력하고 서명을 완료해 주세요.");
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "신청서 제출 중...";
-
-        fetch(gasUrl, { 
-            method: 'POST', 
-            mode: 'no-cors', // GAS 특성에 맞게 설정
-            body: JSON.stringify(data) 
-        })
-        .then(() => {
-            // 성공 시 알림 및 이동
-            alert("재약정 신청서가 성공적으로 제출되었습니다!");
-            // 사장님의 깃허브 view.html 주소로 연결 (bill 파라미터 포함)
-            location.href = "view.html?bill=" + data.billNumber;
-        })
-        .catch(err => {
-            alert("제출 도중 오류가 발생했습니다. 다시 시도해 주세요.");
+        fetch(gasUrl, { method: 'POST', body: JSON.stringify(allData) })
+        .then(r => r.json())
+        .then(res => {
+            if(res.result === "success") {
+                alert("제출이 완료되었습니다!");
+                location.href = "https://jjong0104-boop.github.io/soho_reapply/view.html?bill=" + allData.billNumber;
+            } else {
+                alert("오류: " + res.message);
+                btn.disabled = false;
+            }
+        }).catch(e => {
+            alert("전송 중 오류 발생");
             btn.disabled = false;
-            btn.innerText = "재약정 신청 완료하기";
         });
     }
 </script>
