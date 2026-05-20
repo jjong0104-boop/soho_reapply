@@ -20,8 +20,6 @@
         .form-label { font-weight: 600; font-size: 0.9rem; color: #555; }
         .form-control { padding: 13px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; }
         .bg-readonly { background-color: #f1f3f5 !important; color: #495057; font-weight: bold; }
-        
-        /* 약관 동의 박스 스타일 */
         .agreement-title { font-weight: 700; color: var(--u-magenta); margin-bottom: 8px; font-size: 0.95rem; }
         .agreement-box { 
             background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; 
@@ -29,15 +27,11 @@
         }
         .notice-box { background-color: #fff0f7; border-left: 4px solid var(--u-magenta); padding: 12px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.6; color: #333; }
         .notice-box b { color: var(--u-magenta); }
-
         .btn-magenta { background: var(--u-magenta); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; }
         .btn-magenta:disabled { background: #ccc; }
-        
         .signature-wrapper { background: #fff; border: 2px solid #eee; border-radius: 10px; width: 100%; height: 200px; touch-action: none; position: relative; }
         canvas { width: 100%; height: 100%; }
         #sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ccc; pointer-events: none; font-weight: bold; }
-        
-        /* 페이지 전환용 */
         .step-page { display: none; }
         .step-active { display: block; }
     </style>
@@ -243,12 +237,12 @@ KIBNET, 토스페이먼츠, 자동인출 신청 은행
 
 (개인정보 관리 책임자: 고객보호팀장)
 
-동의 거부 가능, 미동의 시 서비스 가입·이용 제약 가능, 미동의 시 정보 미제공. 위탁·제공 현황 및 변동사항은 홈페이지 개인정보취급방침에 공개 </div>
+동의 거부 가능, 미동의 시 서비스 가입·이용 제약 가능, 미동의 시 정보 미제공. 위탁·제공 현황 및 변동사항은 홈페이지 개인정보취급방침에 공개
                 </div>
-                <div class="mb-4">
+            </div>
 
+            <div class="mb-4">
                 <div class="agreement-title">5. (필수) 문서상 동의 체크 항목</div>
-
                 <div class="agreement-box">(1) 필수 개인신용정보 조회 동의: 본인은 하기 내용에 충분히 이해하고 동의합니다.
 
                 (2) 필수 개인정보 취급위탁 동의: 본인은 하기 내용에 충분히 이해하고 동의합니다.</div>
@@ -280,7 +274,6 @@ KIBNET, 토스페이먼츠, 자동인출 신청 은행
     const gasUrl = "https://script.google.com/macros/s/AKfycbze_qSxZA1ttum3AtoiP-8Vi7VOeqU6D43xmefglodiCY71in8jHBVCAEfS5MLr6aLi/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
-        // 데이터 파싱 및 초기화
         const params = new URLSearchParams(window.location.search);
         document.getElementById('billNumber').value = params.get('bill') || "";
         document.getElementById('custName').value = decodeURIComponent(params.get('name') || "");
@@ -292,7 +285,6 @@ KIBNET, 토스페이먼츠, 자동인출 신청 은행
         const now = new Date();
         document.getElementById('applyDate').value = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
-        // 서명 패드 초기화
         const canvas = document.getElementById('signature-pad');
         signaturePad = new SignaturePad(canvas, { minWidth: 3, maxWidth: 7, penColor: "black" });
         
@@ -352,6 +344,7 @@ KIBNET, 토스페이먼츠, 자동인출 신청 은행
         btn.innerText = "제출 중...";
 
         const allData = {
+            type: "renewal",
             billNumber: document.getElementById('billNumber').value,
             custName: document.getElementById('custName').value,
             custTel: document.getElementById('custTel').value,
@@ -368,7 +361,6 @@ KIBNET, 토스페이먼츠, 자동인출 신청 은행
         .then(r => r.json())
         .then(res => {
             if(res.result === "success") {
-                // 화면 전체를 성공 메시지로 교체
                 document.body.innerHTML = `
                     <div class="container mt-5">
                         <div class="form-card text-center">
